@@ -69,14 +69,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 0);
         totalAmount.textContent = `₹${total.toFixed(2)}`;
     }
+
+
+
     function deleteTransaction(id) {
+        // Send DELETE request to delete transaction
         fetch(`/transactions/${id}`, {
             method: 'DELETE'
         })
         .then(response => {
             if (response.ok) {
+                console.log('Transaction deleted successfully');
+                // Remove the transaction from the transactions array
                 transactions = transactions.filter(transaction => transaction._id !== id);
+                // Re-render the transactions
                 renderTransactions();
+                // Update the total amount
                 updateTotal();
             } else {
                 console.error('Failed to delete transaction:', response.statusText);
@@ -84,5 +92,27 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => console.error('Error:', error));
     }
-    
+
+    function renderTransactions() {
+        tableBody.innerHTML = '';
+        transactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${transaction.description}</td>
+                <td class="${transaction.type === 'expense' ? 'expense' : 'income'}">₹${transaction.amount.toFixed(2)}</td>
+                <td>${transaction.type}</td>
+                <td><button class="delete-btn" data-id="${transaction._id}">Delete</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Add event listener to delete buttons
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const id = this.dataset.id;
+                deleteTransaction(id);
+            });
+        });
+    }
 });
